@@ -5,16 +5,15 @@
 
 class AbstractCamera
 {
-    private:
+    public:
         uint16_t frame_width;
         uint16_t frame_height;
-    public:
         virtual cv::Mat read_gray_image(void) = 0;
         AbstractCamera(uint16_t width, uint16_t height): frame_width(width), frame_height(height) {};
         virtual ~AbstractCamera() = default;
 };
 
-class EmbeddedCamera : AbstractCamera
+class EmbeddedCamera : private AbstractCamera
 {
     private:
         const uint8_t CAMERA_ID = 0;

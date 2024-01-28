@@ -109,19 +109,22 @@ void serve(int port)
 				exit(1);
 			}
 		}
-		size_t img_size;
-		read(rqst, &img_size, sizeof(img_size));
-		std::vector<uchar> img_buffer(img_size);
-		std:: cout << img_size << std::endl;
-		size_t valread = 0; 
-		while(valread < img_size)
+		while(true)
 		{
-			valread += read(rqst, img_buffer.data()+valread, img_size);
-		}
-		std::cout << valread << std::endl;
-		cv::Mat get_img = cv::imdecode(img_buffer, cv::IMREAD_GRAYSCALE);
+			size_t img_size;
+			read(rqst, &img_size, sizeof(img_size));
+			std::vector<uchar> img_buffer(img_size);
+			std:: cout << img_size << std::endl;
+			size_t valread = 0; 
+			while(valread < img_size)
+			{
+				valread += read(rqst, img_buffer.data()+valread, img_size);
+			}
+			std::cout << valread << std::endl;
+			cv::Mat get_img = cv::imdecode(img_buffer, cv::IMREAD_GRAYSCALE);
 
-		cv::imwrite("img.jpg", get_img);
+			cv::imwrite("img.jpg", get_img);
+		}
 
 		printf("received a connection from: %s port %d\n",
 			inet_ntoa(client_addr.sin_addr), ntohs(client_addr.sin_port));

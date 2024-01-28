@@ -1,7 +1,57 @@
-// #ifndef DETECTOR_HPP
-// #define DETECTOR_HPP
+#ifndef DETECTOR_HPP
+#define DETECTOR_HPP
 
-// void print_usage(void);
-// void run_printer_thread(void);
+#include <vector>
+#include <opencv2/opencv.hpp>
 
-// #endif // DETECTOR_HPP
+struct BoundingBox 
+{
+    int x1;
+    int y1;
+    int x2;
+    int y2;
+    int area;
+};
+
+class ImageProcessing
+{
+    private:
+        const uint32_t min_area_threshold = 100;
+        const uint32_t binaryzation_treshold = 0;
+        const double nms_treshold = 0.1;
+        bool is_contained(const BoundingBox& box1, const BoundingBox& box2);
+    public:
+        ImageProcessing() = default;
+        ~ImageProcessing() = default;
+
+        cv::Mat get_motion_mask(const cv::Mat& fg_mask) const;
+        std::vector<cv::Rect> get_contour_detections(const cv::Mat& mask) const;
+        std::vector<uint32_t> remove_contained_bboxes(const std::vector<BoundingBox>& boxes);
+        std::vector<BoundingBox> non_max_suppression(const std::vector<BoundingBox>& boxes, const std::vector<double>& scores);
+};
+
+class AbstractDetector
+{
+    public:
+        virtual std::vector<BoundingBox> get_detections(const cv::Mat& frame) = 0;
+        AbstractDetector() = default;
+        virtual ~AbstractDetector() = default;
+};
+class KnnBackgroundSubstractor : private AbstractDetector
+{
+    private:
+        const int history_lenght;
+        cv::Ptr<cv::BackgroundSubtractor> back_substractor;
+        ImageProcessing image_processor = ImageProcessing();
+    public:
+        KnnBackgroundSubstractor(int history);
+        ~KnnBackgroundSubstractor() override = default;
+        void create_starting_background(std::vector<cv::Mat> const &  init_gray_frames);
+        std::vector<BoundingBox> get_detections(const cv::Mat& frame) override;
+        void draw_bboxes(cv::Mat& frame, const std::vector<BoundingBox>& detections) const;
+};
+
+
+
+
+#endif // DETECTOR_HPP

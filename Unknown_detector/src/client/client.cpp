@@ -58,9 +58,5 @@ int32_t SimpleSocketClient::send_data(const cv::Mat& data_img)
     send(client_descriptor, send_buffer.data(), send_buffer_size, 0); 
     printf("Image sent\n"); 
 
-    std::string reply_buffer;
-    reply_buffer.reserve(MAX_SIZE);
-    ssize_t valread = read(client_descriptor, (void*)reply_buffer.c_str(), MAX_SIZE); 
-    std::cout << reply_buffer;
     return 0;
 }

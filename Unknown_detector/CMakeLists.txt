@@ -7,7 +7,7 @@ include_directories("inc"
 # "src/os"
 "src/camera"
 "src/client"
-# "src/detector"
+"src/detector"
 # "src/utilities"
 )
 set(CMAKE_CXX_STANDARD 17)
@@ -29,7 +29,7 @@ endif()
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-set(OpenCV_DIR "../../build")
+set(OpenCV_DIR "/usr/local/build")
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
