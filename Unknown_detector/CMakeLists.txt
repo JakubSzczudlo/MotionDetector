@@ -4,11 +4,11 @@ project(unknown_detector)
 include(CTest)
 
 include_directories("inc"
-# "src/os"
+"src/os"
 "src/camera"
 "src/client"
 "src/detector"
-# "src/utilities"
+"src/queue"
 )
 set(CMAKE_CXX_STANDARD 17)
 

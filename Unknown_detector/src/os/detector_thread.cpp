@@ -1,34 +1,20 @@
-// #include <pthread.h>
-// #include "printer.h"
-// #include <unistd.h>
-// #include <stdio.h>
-// #include <semaphore.h>
-// #define MICROSECONDS_MULTIPLIER 1000000
+#include <detector.hpp>
+#include "os.hpp"
+#include "queue.hpp"
+#include <thread>
 
-// extern sem_t produced_analyzer;
-
-// void* printer_thread(void* pArg)
-// {
-//     (void) pArg;
-//     while (1)
-//     {
-//         sem_wait(&produced_analyzer);
-//         print_usage();
-//         usleep(1*MICROSECONDS_MULTIPLIER);
-//     }
-//     return 0;
-// }
-
-
-// void run_printer_thread(void)
-// {
-//     pthread_t thread = 0U;
-//     pthread_attr_t threadAttr;
-
-//     pthread_attr_init(&threadAttr);
-//     pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
-
-//     pthread_create(&thread, &threadAttr, printer_thread, 0);
-
-//     pthread_attr_destroy(&threadAttr);
-// }
+void detector_thread(concurrent_queue<cv::Mat> & photos_queue, concurrent_queue<cv::Mat> & tcp_send_queue)
+{
+    auto detector = KnnBackgroundSubstractor(400);
+    
+    cv::Mat imageForProcess;
+    while (true)
+    {
+        photos_queue.wait_and_pop(imageForProcess);
+        bool is_detected = detector.isObjectDetected(imageForProcess);
+        if(is_detected)
+        {
+            tcp_send_queue.push(imageForProcess);
+        }
+    }
+}

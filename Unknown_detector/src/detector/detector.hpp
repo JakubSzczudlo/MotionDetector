@@ -40,13 +40,16 @@ class AbstractDetector
 class KnnBackgroundSubstractor : private AbstractDetector
 {
     private:
+        const uint8_t frame_times_minimal = 10;
+        const uint16_t minimal_detected_object_area = 100*100;
         const int history_lenght;
         cv::Ptr<cv::BackgroundSubtractor> back_substractor;
         ImageProcessing image_processor = ImageProcessing();
     public:
-        KnnBackgroundSubstractor(int history);
+        explicit KnnBackgroundSubstractor(int history);
         ~KnnBackgroundSubstractor() override = default;
         void create_starting_background(std::vector<cv::Mat> const &  init_gray_frames);
+        bool isObjectDetected(cv::Mat & gray_frame);
         std::vector<BoundingBox> get_detections(const cv::Mat& frame) override;
         void draw_bboxes(cv::Mat& frame, const std::vector<BoundingBox>& detections) const;
 };

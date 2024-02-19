@@ -1,6 +1,10 @@
 #ifndef QUEUE_HPP
 #define QUEUE_HPP
 
+#include <condition_variable>
+#include <queue>
+#include <mutex>
+
 template<typename Data>
 class concurrent_queue
 {
@@ -13,10 +17,8 @@ public:
     {
         std::scoped_lock lock(the_mutex);
         the_queue.push(data);
-        lock.unlock();
         the_condition_variable.notify_one();
     }
-
     bool empty() const
     {
         std::scoped_lock lock(the_mutex);
@@ -38,12 +40,11 @@ public:
 
     void wait_and_pop(Data& popped_value)
     {
-        std::scoped_lock lock(the_mutex);
+        std::unique_lock lock(the_mutex);
         while(the_queue.empty())
         {
             the_condition_variable.wait(lock);
         }
-        
         popped_value=the_queue.front();
         the_queue.pop();
     }

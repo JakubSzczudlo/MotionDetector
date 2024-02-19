@@ -1,34 +1,23 @@
-// #include <pthread.h>
-// #include "reader.h"
-// #include <unistd.h>
-// #include <stdio.h>
-// #include <semaphore.h>
-// #define MICROSECONDS_MULTIPLIER 1000000
+#include <stdio.h>
+#include "os.hpp"
+#include "client.hpp"
+#include <thread>
 
-// extern sem_t produced_reader;
-
-// void* reader_thread(void* pArg)
-// {
-//     (void) pArg;
-//     while (1)
-//     {
-//         put_stats_in_queue();
-//         sem_post(&produced_reader);
-//         usleep(1*MICROSECONDS_MULTIPLIER);
-//     }
-//     return 0;
-// }
-
-
-// void run_reader_thread(void)
-// {
-//     pthread_t thread = 0U;
-//     pthread_attr_t threadAttr;
-
-//     pthread_attr_init(&threadAttr);
-//     pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
-
-//     pthread_create(&thread, &threadAttr, reader_thread, 0);
-
-//     pthread_attr_destroy(&threadAttr);
-// }
+void client_thread(concurrent_queue<cv::Mat> & tcp_send_queue)
+{
+    auto socket_client = SimpleSocketClient(8080, "192.168.0.38");
+    cv::Mat image_to_send;
+    auto last_send_time = std::chrono::steady_clock::now();
+    while (true)
+    {
+        tcp_send_queue.wait_and_pop(image_to_send);
+        auto current_time = std::chrono::steady_clock::now();
+        double elapsed_seconds = std::chrono::duration_cast<std::chrono::duration<double>>(current_time - last_send_time).count();
+        if(elapsed_seconds > 0.5)
+        {
+            last_send_time = std::chrono::steady_clock::now();
+            socket_client.send_data(image_to_send);
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+}

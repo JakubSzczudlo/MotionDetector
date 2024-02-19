@@ -138,6 +138,31 @@ void KnnBackgroundSubstractor::create_starting_background(std::vector<cv::Mat> c
     }
 }
 
+bool KnnBackgroundSubstractor::isObjectDetected(cv::Mat & gray_frame)
+{    
+    static uint8_t counter = 0;
+    std::vector<BoundingBox> final_detections = get_detections(gray_frame);
+
+    // Draw bounding boxes on frame
+    auto max_element = std::max_element(final_detections.begin(), final_detections.end(),
+        [](const BoundingBox& a, const BoundingBox& b) {
+            return a.area < b.area;
+        });
+
+    draw_bboxes(gray_frame, final_detections);
+
+    if((max_element != final_detections.end()) && (max_element->area > minimal_detected_object_area))
+    {
+        counter += 1;
+    }
+    else if(counter > 0)
+    {
+        counter -= 1;
+    }
+    bool is_object = (counter == frame_times_minimal);
+    return is_object;
+}
+
 std::vector<BoundingBox> KnnBackgroundSubstractor::get_detections(const cv::Mat& frame)
 {
     const cv::Mat& kernel = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(9, 9));
@@ -150,12 +175,12 @@ std::vector<BoundingBox> KnnBackgroundSubstractor::get_detections(const cv::Mat&
     cv::Mat motion_mask = image_processor.get_motion_mask(fg_mask);
 
     // get initially proposed detections from contours
-    std::vector<cv::Rect> detectionsMat = image_processor.get_contour_detections(motion_mask);
+    std::vector<cv::Rect> detections_mat = image_processor.get_contour_detections(motion_mask);
 
     // separate bboxes and scores
     std::vector<BoundingBox> bboxes;
     std::vector<double> scores;
-    for (cv::Rect given_rectangle : detectionsMat) 
+    for (cv::Rect given_rectangle : detections_mat) 
     {
         BoundingBox box;
         box.x1 = given_rectangle.x;
@@ -169,9 +194,9 @@ std::vector<BoundingBox> KnnBackgroundSubstractor::get_detections(const cv::Mat&
     }
 
     // perform Non-Maximal Suppression on initial detections
-    std::vector<BoundingBox> finalDetections = image_processor.non_max_suppression(bboxes, scores);
+    std::vector<BoundingBox> final_detections = image_processor.non_max_suppression(bboxes, scores);
 
-    return finalDetections;
+    return final_detections;
 }
 
 void KnnBackgroundSubstractor::draw_bboxes(cv::Mat& frame, const std::vector<BoundingBox>& detections) const
@@ -181,3 +206,6 @@ void KnnBackgroundSubstractor::draw_bboxes(cv::Mat& frame, const std::vector<Bou
         cv::rectangle(frame, cv::Point(det.x1, det.y1), cv::Point(det.x2, det.y2), cv::Scalar(0, 255, 0), 3);
     }
 }
+
+
+
