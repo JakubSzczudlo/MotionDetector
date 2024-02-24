@@ -29,7 +29,7 @@ endif()
 
 file(GLOB_RECURSE SOURCES "src/*.cpp")
 
-set(OpenCV_DIR "/usr/local/build")
+set(OpenCV_DIR "/usr/local/build/OpenCV")
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
