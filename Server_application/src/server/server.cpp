@@ -33,6 +33,7 @@ void SocketServer::accept_connection(void)
 [[noreturn]] void SocketServer::run_session(int rqst)
 {
 	static uint8_t img_counter = 0;
+	std::cout << "Session started" << std::endl;
 	while(true)
 	{
 		std::string img_save_name{"test_img"};
@@ -51,6 +52,7 @@ void SocketServer::accept_connection(void)
 		img_save_name += std::to_string(img_counter);
 		img_save_name += ".jpg";
 		cv::imwrite(img_save_name, get_img);
+		notifier->post_data("Warning", "Motion detected");
 	}
 }
 

@@ -34,8 +34,6 @@ class SocketServer
         SocketServer(uint16_t port_number, std::string const & IP, CurlWebNotifier* notify);
         bool start_socket(void);
         void accept_connection(void);
-
-
 };
 
 #endif // SERVER_HPP
